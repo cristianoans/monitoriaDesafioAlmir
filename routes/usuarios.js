@@ -5,9 +5,22 @@ const usuarios = express.Router(); // definimos usuarios como rota
 
 usuarios.route('/')
     .get((req, res) => {
-
-        // retorna o banco de dados
+        const { nome, media } = req.query;
+        
         const db = lerBancoDados();
+
+        if(nome){
+            const dbModificado = db.filter(aluno => aluno.nome.toLowerCase().includes(nome.toLowerCase()));
+            res.status(200).json(dbModificado);
+            return;
+        }
+
+        if(media){
+            const dbModificado = db.filter(aluno => Number(aluno.media) >= Number(media));
+            res.status(200).json(dbModificado);
+            return;
+        }
+        
         res.status(200).json(db);
 
     })
