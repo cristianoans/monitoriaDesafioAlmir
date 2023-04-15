@@ -50,7 +50,43 @@ usuarios.route('/')
 
     })
     .put((req, res) => {
-        res.json({ mensagem: "PUT realizado com sucesso" })
+        const { matricula, nome, media } = req.body;
+
+        // verifica se algun campo está ausente na requisição
+        if (!matricula || !nome || !media) {
+            res.status(400).json({ mensagem: "campos obrigatórios não informados." });
+            return;
+        }
+
+        // retorna o banco de dados
+        const db = lerBancoDados();
+
+        // verifica se a matricula existe
+        const alunoEncontrado = db.find(aluno => aluno.matricula === matricula);
+
+        // se não existe retorna erro e uma mensagem de aluno não encontrado
+        if (!alunoEncontrado) {
+            res.status(404).json({ mensagem: "aluno inexistente." });
+            return;
+        }
+
+        // gera um array sem o objeto que queremos modificar
+        const dbModificado = db.filter(aluno => aluno.matricula !== matricula);
+
+        // gera um novo objeto com as informações enviadas na requisição
+        const alunoModificado = {
+            matricula,
+            nome,
+            media
+        }
+
+        // adiciona o novo objeto ao array modificado
+        dbModificado.push(alunoModificado);
+
+        // grava os dados modificados no banco de dados
+        gravarBancoDados(dbModificado);
+
+        res.status(200).json({ mensagem: "Aluno atualizado." })
     })
     .delete((req, res) => {
         const { matricula, nome, media } = req.body;
