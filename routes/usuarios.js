@@ -15,32 +15,32 @@ usuarios.route('/')
         const { matricula, nome, media } = req.body;
 
         // verifica se os campos foram enviados na requisição
-        if (!matricula || !nome || !media) { 
+        if (!matricula || !nome || !media) {
             res.status(400).json({ mensagem: "campos obrigatórios não preenchidos" });
             return;
         }
 
         // retorna o banco de dados
         const db = lerBancoDados();
-        
+
         // verifica se o usuário já existe no banco de dados
         const alunoEncontrado = db.find(aluno => aluno.matricula === matricula)
 
         // se ele existe, interrompe a criação.
         if (alunoEncontrado) {
-            res.status(400).json({mensagem: "aluno já existe"});
+            res.status(400).json({ mensagem: "aluno já existe" });
             return;
         }
 
         // cria um novo objeto com as informações enviadas na requisição
-        const novoAluno = { 
+        const novoAluno = {
             matricula,
             nome,
             media
         }
 
         // adiciona o objeto criado no array do banco de dados
-        db.push(novoAluno); 
+        db.push(novoAluno);
 
         // grava os dados atualizados no banco de dados
         gravarBancoDados(db);
@@ -53,7 +53,33 @@ usuarios.route('/')
         res.json({ mensagem: "PUT realizado com sucesso" })
     })
     .delete((req, res) => {
-        res.json({ mensagem: "DELETE realizado com sucesso" })
+        const { matricula, nome, media } = req.body;
+
+        // verifica se os campos foram enviados na requisição
+        if (!matricula || !nome || !media) {
+            res.status(400).json({ mensagem: "campos obrigatórios não preenchidos" });
+            return;
+        }
+
+        // retorna o banco de dados
+        const db = lerBancoDados();
+
+        // verifica se o usuário já existe no banco de dados
+        const alunoEncontrado = db.find(aluno => aluno.matricula === matricula);
+
+        // se não existe retorna erro e uma mensagem de aluno não encontrado
+        if (!alunoEncontrado) {
+            res.status(404).json({ mensagem: "aluno inexistente." });
+            return;
+        }
+
+        // remove o aluno do array do banco de dados
+        const dbModificado = db.filter(aluno => aluno.matricula !== matricula);
+
+        // grava o array modificado no banco de dados
+        gravarBancoDados(dbModificado);
+
+        res.status(200).json({ mensagem: "Aluno excluido com sucesso." });
     });
 
 function lerBancoDados() { // função que retorna o banco de dados
